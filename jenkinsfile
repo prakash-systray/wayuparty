@@ -1,0 +1,14 @@
+node{
+ stage('Git Checkout'){
+	git 'https://github.com/prakash-systray/wayuparty'  
+ }
+ stage('Maven Package'){
+	sh 'mvn clean package'
+	sh 'mv target/wayuparty*.war target/wayuparty.war'
+ }
+ 
+ stage('Build Docker Imager'){
+   sh 'docker build -t kammana/wayuparty:0.0.1 .'
+ }
+
+}
