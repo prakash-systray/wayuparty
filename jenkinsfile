@@ -1,0 +1,45 @@
+pipeline{
+    agent any
+    tools{
+        maven 'maven'
+    }
+    
+    stages{
+        stage('git checkout'){
+            steps{
+                git branch: 'main', url: 'https://github.com/prakash-systray/wayuparty.git'
+            }
+        }
+        stage("mvn build"){
+            steps{
+               
+                sh 'mvn clean package'
+            }
+        }
+        stage("docker build"){
+            steps{
+                sh 'docker build -t prakash4742/wayupartyweb:2 .'
+            }
+        }
+        stage("docker push"){
+            steps{
+                withCredentials([string(credentialsId: 'docker-pwd', variable: 'dockerHubPwd')]) {
+                    sh 'docker login -u prakash4742 -p ${dockerHubPwd}'
+                }
+            
+                sh 'docker push prakash4742/wayuparty:2 '
+            }
+        }
+        stage("docker Run"){
+            steps{
+                sshagent(['docker-pwd1']) {  
+                sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.40.84 docker run -p 8080:8080 -d --name wayuparty prakash4742/wayupartyweb:2 '
+               }
+            }
+            
+        }
+        
+        
+    
+    }
+ }
